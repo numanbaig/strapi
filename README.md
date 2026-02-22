@@ -1,0 +1,3 @@
+# Strapi
+
+Strapi project.
