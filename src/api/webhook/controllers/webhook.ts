@@ -67,12 +67,13 @@ export default {
 
       strapi.log.info(`Booking created for ${email} on ${date} at ${time}`);
 
-      try {
-        await sendBookingConfirmationEmail({ to: email, name, date, time, meetingLink });
-        strapi.log.info(`Booking confirmation email sent to ${email}`);
-      } catch (err) {
-        strapi.log.error(`Failed to send booking confirmation email:`, err);
-      }
+      // TODO: Uncomment when Mailgun keys are configured
+      // try {
+      //   await sendBookingConfirmationEmail({ to: email, name, date, time, meetingLink });
+      //   strapi.log.info(`Booking confirmation email sent to ${email}`);
+      // } catch (err) {
+      //   strapi.log.error(`Failed to send booking confirmation email:`, err);
+      // }
 
       try {
         const crmResult = await createLeadInCrm({
@@ -182,16 +183,17 @@ export default {
           }
         }
 
-        try {
-          await sendFollowUpEmail({
-            to: lead.email,
-            name: lead.name,
-            stage: newStage || eventType,
-          });
-          strapi.log.info(`Follow-up email sent to ${lead.email} for stage: ${newStage}`);
-        } catch (err) {
-          strapi.log.error(`Failed to send follow-up email:`, err);
-        }
+        // TODO: Uncomment when Mailgun keys are configured
+        // try {
+        //   await sendFollowUpEmail({
+        //     to: lead.email,
+        //     name: lead.name,
+        //     stage: newStage || eventType,
+        //   });
+        //   strapi.log.info(`Follow-up email sent to ${lead.email} for stage: ${newStage}`);
+        // } catch (err) {
+        //   strapi.log.error(`Failed to send follow-up email:`, err);
+        // }
       }
 
       ctx.status = 200;

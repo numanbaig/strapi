@@ -7,15 +7,16 @@ export default factories.createCoreController('api::lead.lead', ({ strapi }) => 
     const response = await super.create(ctx);
     const lead = response.data;
 
-    try {
-      await sendLeadAcknowledgmentEmail({
-        to: lead.email,
-        name: lead.name,
-      });
-      strapi.log.info(`Acknowledgment email sent to ${lead.email}`);
-    } catch (err) {
-      strapi.log.error(`Failed to send acknowledgment email to ${lead.email}:`, err);
-    }
+    // TODO: Uncomment when Mailgun keys are configured
+    // try {
+    //   await sendLeadAcknowledgmentEmail({
+    //     to: lead.email,
+    //     name: lead.name,
+    //   });
+    //   strapi.log.info(`Acknowledgment email sent to ${lead.email}`);
+    // } catch (err) {
+    //   strapi.log.error(`Failed to send acknowledgment email to ${lead.email}:`, err);
+    // }
 
     try {
       const crmResult = await createLeadInCrm({
