@@ -1,4 +1,6 @@
+/** @type {import('@strapi/strapi').Core.RouterConfig} */
 export default {
+  type: 'content-api',
   routes: [
     {
       method: 'POST',

@@ -545,7 +545,7 @@ export interface ApiLeadLead extends Struct.CollectionTypeSchema {
       }>;
     publishedAt: Schema.Attribute.DateTime;
     source: Schema.Attribute.Enumeration<
-      ['landing_page', 'cal_booking', 'referral', 'other']
+      ['landing_page', 'cal_booking', 'referral', 'waitlist', 'other']
     > &
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<'landing_page'>;

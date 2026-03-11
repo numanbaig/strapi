@@ -26,7 +26,7 @@
     },
     "source": {
       "type": "enumeration",
-      "enum": ["landing_page", "cal_booking", "referral", "other"],
+      "enum": ["landing_page", "cal_booking", "referral", "waitlist", "other"],
       "default": "landing_page",
       "required": true
     },
