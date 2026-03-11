@@ -21,7 +21,7 @@ export async function createLeadInCrm(params: {
   const firstName = nameParts[0] || '';
   const lastName = nameParts.slice(1).join(' ') || '';
 
-  const response = await crmClient.post('/api/objects/people', {
+  const response = await crmClient.post('/rest/people', {
     name: {
       firstName,
       lastName,
@@ -30,18 +30,19 @@ export async function createLeadInCrm(params: {
       primaryEmail: params.email,
     },
     phones: params.phone
-      ? { primaryPhone: params.phone }
+      ? { primaryPhoneNumber: params.phone }
       : undefined,
   });
 
-  return { id: response.data?.data?.id || response.data?.id };
+  const created = response.data?.data?.createPerson || response.data?.data || response.data;
+  return { id: created.id };
 }
 
 export async function updateLeadInCrm(
   crmId: string,
   data: Record<string, unknown>
 ): Promise<void> {
-  await crmClient.patch(`/api/objects/people/${crmId}`, data);
+  await crmClient.patch(`/rest/people/${crmId}`, data);
 }
 
 export async function getLeadFromCrm(crmId: string): Promise<{
@@ -51,7 +52,7 @@ export async function getLeadFromCrm(crmId: string): Promise<{
   stage?: string;
 } | null> {
   try {
-    const response = await crmClient.get(`/api/objects/people/${crmId}`);
+    const response = await crmClient.get(`/rest/people/${crmId}`);
     const person = response.data?.data || response.data;
     return {
       id: person.id,

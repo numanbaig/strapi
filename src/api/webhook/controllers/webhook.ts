@@ -1,4 +1,3 @@
-import type { Core } from '@strapi/strapi';
 import crypto from 'crypto';
 import { sendBookingConfirmationEmail, sendFollowUpEmail } from '../../../services/mailgun';
 import { createLeadInCrm } from '../../../services/twenty-crm';
@@ -20,7 +19,6 @@ export default {
    * Receives Cal.com booking webhook payloads.
    */
   async handleBooking(ctx) {
-    const { strapi }: { strapi: Core.Strapi } = ctx;
     const rawBody = JSON.stringify(ctx.request.body);
     const signature = ctx.request.headers['x-cal-signature'] as string | undefined;
 
@@ -51,7 +49,10 @@ export default {
 
     const dateObj = new Date(startTime);
     const date = dateObj.toISOString().split('T')[0];
-    const time = dateObj.toTimeString().slice(0, 5);
+    const hours = String(dateObj.getHours()).padStart(2, '0');
+    const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+    const seconds = String(dateObj.getSeconds()).padStart(2, '0');
+    const time = `${hours}:${minutes}:${seconds}.000`;
 
     try {
       const booking = await strapi.documents('api::booking.booking').create({
@@ -130,7 +131,6 @@ export default {
    * Receives Twenty CRM webhook payloads for stage changes and deal updates.
    */
   async handleCrm(ctx) {
-    const { strapi }: { strapi: Core.Strapi } = ctx;
     const rawBody = JSON.stringify(ctx.request.body);
     const signature = ctx.request.headers['x-webhook-signature'] as string | undefined;
 
