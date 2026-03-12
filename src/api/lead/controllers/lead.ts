@@ -1,4 +1,3 @@
-import crypto from 'node:crypto';
 import { factories } from '@strapi/strapi';
 import { sendLeadAcknowledgmentEmail } from '../../../services/mailgun';
 import { createLeadInCrm } from '../../../services/twenty-crm';
@@ -21,39 +20,46 @@ export default factories.createCoreController('api::lead.lead', ({ strapi }) => 
       return ctx.badRequest('Invalid email address');
     }
 
-    const userService = strapi.plugin('users-permissions').service('user');
-    const settings = (await strapi.store({ type: 'plugin', name: 'users-permissions' }).get({ key: 'advanced' })) as { default_role?: string } | null;
-    const defaultRole = settings?.default_role ?? 'authenticated';
-    const role = await strapi.db
-      .query('plugin::users-permissions.role')
-      .findOne({ where: { type: defaultRole } });
-
-    if (!role) {
-      return ctx.internalServerError('Default role not found');
-    }
-
-    const existing = await strapi.db
-      .query('plugin::users-permissions.user')
-      .findOne({ where: { email } });
-
-    if (existing) {
-      return ctx.badRequest('Email already registered');
-    }
-
-    const baseUsername = name.replace(/\s+/g, '_').toLowerCase() || email.split('@')[0];
-    const username = `${baseUsername}_${crypto.randomBytes(4).toString('hex')}`;
-    const password = crypto.randomUUID();
-
-    const user = await userService.add({
-      username,
-      email,
-      password,
-      role: role.id,
-      confirmed: true,
-      provider: 'local',
+    const existingLead = await strapi.db.query('api::lead.lead').findOne({
+      where: { email },
     });
 
-    return ctx.send({ data: { id: user.id, username: user.username, email: user.email }, ok: true });
+    if (existingLead) {
+      return ctx.badRequest('Email already registered on waitlist');
+    }
+
+    const lead = await strapi.documents('api::lead.lead').create({
+      data: {
+        name,
+        email,
+        source: 'waitlist',
+        status: 'new',
+      },
+    });
+
+    try {
+      const crmResult = await createLeadInCrm({
+        name: lead.name,
+        email: lead.email,
+        phone: lead.phone,
+        source: lead.source,
+      });
+
+      if (crmResult?.id) {
+        await strapi.documents('api::lead.lead').update({
+          documentId: lead.documentId,
+          data: { crmId: crmResult.id },
+        });
+        strapi.log.info(`Waitlist lead synced to CRM with ID: ${crmResult.id}`);
+      }
+    } catch (err) {
+      strapi.log.error(`Failed to sync waitlist lead to CRM for ${lead.email}:`, err);
+    }
+
+    return ctx.send({
+      data: { id: lead.documentId, name: lead.name, email: lead.email },
+      ok: true,
+    });
   },
 
   async create(ctx) {
